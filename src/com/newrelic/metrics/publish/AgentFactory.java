@@ -21,21 +21,21 @@ import com.newrelic.metrics.publish.util.Logger;
  * <ol>
  * <li> Create new instances of an {@link Agent}
  * <li> Use {@code Map} of properties to configure state of new {@link Agent}s
- * </ol>
+ * </ol>debug
  * <p> {@code Map} of properties comes from the {@code plugin.json} configuration file
  * within the {@code agents} section.
  * @see Config
  */
 public abstract class AgentFactory {
-    
+
     private static final Logger logger = Logger.getLogger(AgentFactory.class);
 
     /**
      * Return a new instance of the appropriate {@link Agent} subclass, configured with information
      * extracted from the {@code properties}, a {@code Map} of configuration keys and values.
-     * The keys and values are the result of processing the {@code agents} section of the 
-     * {@code plugin.json} configuration file. The specific keys and legal values are specific 
-     * to the domain of the agent. Since the values come in as {@code Object}, casting and 
+     * The keys and values are the result of processing the {@code agents} section of the
+     * {@code plugin.json} configuration file. The specific keys and legal values are specific
+     * to the domain of the agent. Since the values come in as {@code Object}, casting and
      * conversion may be required.
      * @param properties the {@code Map} of properties for creating a configured {@link Agent}
      * @throws ConfigurationException if an error occurs while creating a configured {@link Agent}
@@ -48,7 +48,7 @@ public abstract class AgentFactory {
             if ( !(Config.getValue("agents") instanceof JSONArray) ) {
                 throw new ConfigurationException("Plugin 'agents' JSON configuration must be an array");
             }
-            
+
             JSONArray json = Config.getValue("agents");
             for (int i = 0; i < json.size(); i++) {
                 JSONObject obj = (JSONObject) json.get(i);
@@ -88,14 +88,14 @@ public abstract class AgentFactory {
         } catch(IOException ioEx) {
             throw logAndThrow("Error reading config file " + file.getAbsolutePath());
         }
-        
+
         JSONArray json = (JSONArray) parseResult;
         return json;
     }
 
     private void createAndRegister(Runner runner, Map<String, Object> map) throws ConfigurationException {
         Agent agent = createConfiguredAgent(map);
-        logger.debug("Created agent: ", agent);
+        System.out.println("ttam_dbg Created agent: " + agent);
         runner.register(agent);
     }
 

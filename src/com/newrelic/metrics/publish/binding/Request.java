@@ -20,7 +20,7 @@ import com.newrelic.metrics.publish.util.Logger;
 /**
  * Provisional API which is subject to change.
  * Represents a request to the New Relic metrics API.
- * 
+ *
  * <p> A {@code Request} has an associated {@link Context} and a list of metrics for a given component.
  * The {@code Request} is sent in the JSON format.
  *
@@ -28,7 +28,7 @@ import com.newrelic.metrics.publish.util.Logger;
 public class Request {
 
     private static final Logger logger = Logger.getLogger(Request.class);
-    
+
     private static final String EMPTY_STRING = "";
     private static final String STATUS = "status";
     private static final String OK_STATUS = "ok";
@@ -36,7 +36,7 @@ public class Request {
     private static final int EXIT_CODE = 1;
 
     private final Context context;
-    private final HashMap<ComponentData, LinkedList<MetricData>> metrics = new HashMap<ComponentData, LinkedList<MetricData>>(); 
+    private final HashMap<ComponentData, LinkedList<MetricData>> metrics = new HashMap<ComponentData, LinkedList<MetricData>>();
 
     private boolean delivered = false;
 
@@ -93,33 +93,33 @@ public class Request {
     public void deliver() {
         // do not send an empty request
         if (metrics.isEmpty()) {
-            logger.debug("No metrics were reported for this poll cycle");
+            System.out.println("ttam_dbg: No metrics were reported for this poll cycle");
         } else {
             HttpURLConnection connection = null;
-            
+
             try {
                 Map<String, Object> data = serialize();
                 String json = JSONObject.toJSONString(data);
                 logger.debug("Sending JSON: ", json);
-                
+
                 connection = context.createUrlConnectionForOutput();
                 OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-                
+
                 try {
                     out.write(json);
                 } finally {
                     out.close();
                 }
-                
+
                 // process and log response from the collector
                 processResponse(connection);
             }
             catch (Exception ex) {
                 logger.error(ex, "An error occurred communicating with the New Relic service");
-    
+
                 if (connection != null) {
                     try {
-                        logger.info("Response: ", connection.getResponseCode(), " : ", connection.getResponseMessage());
+                        System.out.println("ttam_dbg Response: " + connection.getResponseCode() + " : " + connection.getResponseMessage());
                      } catch (IOException e) {
                         logger.debug(ex, ex.getMessage());
                     }
@@ -139,7 +139,7 @@ public class Request {
     /* package */ boolean isDelivered() {
         return delivered;
     }
-    
+
     /**
      * Process response and log response as appropriate.
      * @param connection
@@ -150,14 +150,14 @@ public class Request {
 
         // do not log 503 responses
         if (isCollectorUnavailable(responseCode)) {
-            logger.debug("Collector temporarily unavailable...continuing");
+            System.out.println("ttam_dbg: Collector temporarily unavailable...continuing");
         }
         else {
             // read server response
             String responseBody = getServerResponse(responseCode, connection);
-        
+
             if (isResponseEmpty(responseBody)) {
-                logger.info("Failed server response: no response, with response code: ", responseCode);
+                System.out.println("ttam_dbg Failed server response: no response, with response code: " + responseCode);
             }
             else if (isRemotelyDisabled(responseCode, responseBody)) {
                 // Remote disabling by New Relic -- exit
@@ -179,7 +179,7 @@ public class Request {
             }
         }
     }
-    
+
     /**
      * Checks if the Collector is currently unavailable.
      * A 503 response code (HTTP_UNAVAILABLE) from the Collector is an unavailable response.
@@ -189,7 +189,7 @@ public class Request {
     private boolean isCollectorUnavailable(int responseCode) {
         return responseCode == HttpURLConnection.HTTP_UNAVAILABLE;
     }
-    
+
     /**
      * Checks if the Collector response is empty
      * @param responseBody
@@ -198,7 +198,7 @@ public class Request {
     private boolean isResponseEmpty(String responseBody) {
         return responseBody == null || EMPTY_STRING.equals(responseBody);
     }
-    
+
     /**
      * Checks if the agent has been remotely disabled by the Collector.
      * A 403 response code (HTTP_FORBIDDEN) with DISABLE_NEW_RELIC as the response body
@@ -210,7 +210,7 @@ public class Request {
     private boolean isRemotelyDisabled(int responseCode, String responseBody) {
         return responseCode == HttpURLConnection.HTTP_FORBIDDEN && DISABLE_NEW_RELIC.equals(responseBody);
     }
-    
+
     /**
      * Checks if the Collector response is Ok.
      * A 200 response code (HTTP_OK) with status of "ok" in the response body is an Ok response.
@@ -223,7 +223,7 @@ public class Request {
         String statusMessage = getStatusMessage(responseBody);
         return responseCode == HttpURLConnection.HTTP_OK && OK_STATUS.equals(statusMessage);
     }
-    
+
     /**
      * Get server response from provided input stream
      * @param responseCode
@@ -232,9 +232,9 @@ public class Request {
      * @throws IOException
      */
     private String getServerResponse(int responseCode, HttpURLConnection connection) throws IOException {
-    
+
         InputStream input = getResponseStream(responseCode, connection);
-    
+
         StringBuilder builder = new StringBuilder();
         if (input != null) {
             BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -249,7 +249,7 @@ public class Request {
         }
         return builder.toString();
     }
-    
+
     /**
      * Get an InputStream from the server response.
      * Valid responses have response codes less than 400 (bad request).
@@ -262,7 +262,7 @@ public class Request {
     private InputStream getResponseStream(int responseCode, HttpURLConnection connection) throws IOException {
         return (responseCode < HttpURLConnection.HTTP_BAD_REQUEST) ? connection.getInputStream() : connection.getErrorStream();
     }
-    
+
     /**
      * Get status message by parsing JSON response body.
      * Will return null if no status is present.
@@ -275,10 +275,10 @@ public class Request {
         if (json != null) {
             return (String) json.get(STATUS);
         } else {
-            return null;  
+            return null;
         }
     }
-    
+
     /**
      * Update component timestamps for last successful reported.
      */
@@ -287,7 +287,7 @@ public class Request {
             component.setLastSuccessfulReportedAt(deliveredAt);
         }
     }
-    
+
     /* package */ Map<String, Object> serialize() {
         return context.serialize(this);
     }

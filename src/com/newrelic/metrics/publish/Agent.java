@@ -57,7 +57,7 @@ public abstract class Agent {
      * Subclasses may override but must call {@code super}.
      */
     public void setupMetrics() {
-        logger.debug("Setting up metrics");
+        System.out.println("ttam_dbg Setting up metrics");
     }
 
     /**
@@ -81,7 +81,7 @@ public abstract class Agent {
      * Subclasses may override but must call {@code super}.
      */
     public void prepareToRun() {
-        logger.debug("Preparing to run");
+        System.out.println("ttam_dbg: Preparing to run");
     }
 
     /**

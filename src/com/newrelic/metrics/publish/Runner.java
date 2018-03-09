@@ -137,7 +137,7 @@ public class Runner {
     }
 
     private void setupAgents() throws ConfigurationException {
-        logger.debug("Setting up agents to be run");
+        System.out.println("ttam_dbg Setting up agents to be run");
 
         createAgents();
         if(config.internalGetServiceURI() != null) {
@@ -198,16 +198,16 @@ public class Runner {
         @Override
         public void run() {
             try {
-                logger.debug("Harvest and report data");
+                System.out.println("ttam_dbg Harvest and report data");
 
                 Request request = context.createRequest();
 
                 for (Iterator<Agent> iterator = componentAgents.iterator(); iterator.hasNext();) {
                     Agent agent = iterator.next();
                     agent.getCollector().setRequest(request);
-                    logger.debug("Beginning poll cycle for agent: '", agent.getAgentName(), "'");
+                    System.out.println("ttam_dbg Beginning poll cycle for agent: '" + agent.getAgentName() + "'");
                     agent.pollCycle();
-                    logger.debug("Ending poll cycle for agent: '", agent.getAgentName(), "'");
+                    System.out.println("ttam_dbg Ending poll cycle for agent: ' " + agent.getAgentName() + "'");
                 }
 
                 request.deliver();
